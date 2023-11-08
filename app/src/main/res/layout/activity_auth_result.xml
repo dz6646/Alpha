@@ -44,10 +44,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="12"
-                android:backgroundTint="#000000"
+                android:backgroundTint="#939090"
                 android:foregroundTint="#FFFFFF"
-                android:text="Sign out"
                 android:onClick="signout"
+                android:text="Sign out"
                 android:textSize="20sp" />
 
             <Space
