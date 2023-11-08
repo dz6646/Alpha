@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Alpha</string>
+    <string name="log_in">Log in</string>
+    <string name="sign_up">Sign up</string>
+</resources>
