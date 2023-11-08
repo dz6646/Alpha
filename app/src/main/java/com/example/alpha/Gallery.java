@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,6 +17,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -26,8 +30,10 @@ public class Gallery extends AppCompatActivity {
     private final int GALLERY_REQ_CODE = 19;
     ImageView img_gallery;
     Uri imageUri;
+    Uri loadUri;
     FirebaseStorage storage;
     StorageReference storageRef;
+    String random;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +48,7 @@ public class Gallery extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         menu.add("Auth");
+        menu.add("multiLine");
         return true;
     }
 
@@ -52,6 +59,11 @@ public class Gallery extends AppCompatActivity {
             case "Auth":
                 Intent Auth = new Intent(this, Auth.class);
                 startActivity(Auth);
+                finish();
+                break;
+            case "multiText":
+                Intent multi = new Intent(this, multiLine.class);
+                startActivity(multi);
                 finish();
                 break;
         }
@@ -76,7 +88,7 @@ public class Gallery extends AppCompatActivity {
             {
                 pd.show();
                 imageUri = data.getData();
-                String random = UUID.randomUUID().toString();
+                random = UUID.randomUUID().toString();
                 StorageReference imageRef = storageRef.child("images/" + random);
                 imageRef.putFile(imageUri).addOnSuccessListener(taskSnapshot -> {
                     pd.dismiss();
@@ -95,11 +107,18 @@ public class Gallery extends AppCompatActivity {
     }
 
     public void show_picture(View view) {
-        if(imageUri != null)
-        {
-            img_gallery.setImageURI(imageUri);
-        }
+        if(random != null) {
+            String path = "images/" + random;
+            StorageReference getImage = storageRef.child(path);
+            getImage.getBytes(1024 * 1024).addOnSuccessListener(bytes -> {
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0 , bytes.length);
+                img_gallery.setImageBitmap(bitmap);
 
+            }).addOnFailureListener(e -> {
+
+                Toast.makeText(this, "Image download failed", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
 
     protected void onDestroy () {
