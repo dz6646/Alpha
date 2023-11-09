@@ -2,6 +2,7 @@ package com.example.alpha;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -36,25 +37,29 @@ public class Auth extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
         menu.add("Gallery");
         menu.add("multiLine");
+        menu.add("Camera");
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent intent = null;
         switch(item.getTitle().toString())
         {
+            case "Camera":
+                intent = new Intent(this, Camera_TF.class);
+                break;
+
             case "Gallery":
-                Intent Gallery = new Intent(this, Gallery.class);
-                startActivity(Gallery);
-                finish();
+                intent = new Intent(this, Gallery.class);
                 break;
 
             case "multiLine":
-                Intent multi = new Intent(this, multiLine.class);
-                startActivity(multi);
-                finish();
+                intent = new Intent(this, multiLine.class);
                 break;
         }
+        startActivity(intent);
+        finish();
         return true;
     }
 
