@@ -59,6 +59,7 @@ public class multiLine extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.main, menu);
         menu.add("Auth");
         menu.add("Gallery");
+        menu.add("Camera");
         return true;
     }
 
@@ -74,6 +75,11 @@ public class multiLine extends AppCompatActivity {
             case "Gallery":
                 Intent Gallery = new Intent(this, com.example.alpha.Gallery.class);
                 startActivity(Gallery);
+                finish();
+                break;
+            case "Camera":
+                Intent camera = new Intent(this, Camera_TF.class);
+                startActivity(camera);
                 finish();
                 break;
         }

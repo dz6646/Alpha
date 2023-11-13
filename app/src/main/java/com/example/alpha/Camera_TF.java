@@ -10,7 +10,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -19,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -28,6 +31,11 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.UUID;
 
 public class Camera_TF extends AppCompatActivity {
@@ -35,6 +43,9 @@ public class Camera_TF extends AppCompatActivity {
     ImageView camera;
     FirebaseStorage store;
     StorageReference sRef;
+    TextView out;
+    Bitmap bitmap;
+
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -42,6 +53,8 @@ public class Camera_TF extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera_tf);
         camera = findViewById(R.id.show_captured);
+        out = findViewById(R.id.analysis);
+        bitmap = null;
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
         != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]
@@ -95,7 +108,7 @@ public class Camera_TF extends AppCompatActivity {
         {
             if (resultCode == RESULT_OK && data != null && data.getExtras() != null)
             {
-                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+                bitmap = (Bitmap) data.getExtras().get("data");
                 camera.setImageBitmap(bitmap);
                 String random = UUID.randomUUID().toString();
 
@@ -105,15 +118,35 @@ public class Camera_TF extends AppCompatActivity {
                 byte[] data_bytes = baos.toByteArray();
 
                 img_ref.putBytes(data_bytes).addOnSuccessListener(taskSnapshot ->
-                        Toast.makeText(Camera_TF.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show())
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(this, "Upload Failed", Toast.LENGTH_SHORT).show();
-                        });
+                                Toast.makeText(Camera_TF.this, "Uploaded Successfully", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show());
             }
         }
     }
-
     public void Analyze(View view) {
+        if(bitmap == null)
+        {
+            return;
+        }
+        int brightness = calculateBrightness(bitmap, 1); // the brightness is 0 for completely black and 255 to white
+        out.setText("Brightness : " + brightness);
+    }
 
+    public int calculateBrightness(Bitmap bitmap, int pixelSpacing)
+    {
+        int R = 0; int G = 0; int B = 0;
+        int height = bitmap.getHeight();
+        int width = bitmap.getWidth();
+        int n = 0;
+        int[] pixels = new int[width * height];
+        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+        for (int i = 0; i < pixels.length; i += pixelSpacing) {
+            int color = pixels[i];
+            R += Color.red(color);
+            G += Color.green(color);
+            B += Color.blue(color);
+            n++;
+        }
+        return (R + B + G) / (n * 3);
     }
 }
